@@ -12,7 +12,7 @@ Nakon pokretanja fuzzera, kreiramo neki random redoslijed unikatnih znakova dulj
 
 /opt/metasploit-framework/embedded/bin/ruby (putanja da se moze pokretati na THM masini)
 
-To koristima kada se program crasha da mozemo pronaci na kojoj lokaciji je registar koji nam treba.
+To koristimo kada se program crasha da mozemo pronaci na kojoj lokaciji je registar koji nam treba. (stavljamo podatak na payload)
 Ako nam EIP registar ima vrijednost 0x12345678 mozemo pronaci na kojoj lokaciji za offset cemo koristiti preko naredbe:
 /usr/share/metasploit-framework/tools/exploit/pattern_offset.rb -q 12345678
 Također kada se crasha sa payloadom mozemo pogledati registre preko naredbe:
