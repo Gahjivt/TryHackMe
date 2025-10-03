@@ -19,9 +19,7 @@ token = jwt.encode(payload, secret_key, algorithm="HS256", headers=header)
 print(token)
 
 
-import jwt
 
-secret_key = "sifra"
 
 try:
     decoded = jwt.decode(token, secret_key, algorithms=["HS256"])
