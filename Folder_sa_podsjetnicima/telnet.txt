@@ -1,0 +1,85 @@
+smtp
+Naredba: telnet IP port
+Prvobitno kada uđemo dobivamo ovakav ispis:
+
+root@ip-10-10-227-59:~# telnet 10.10.243.213 25
+Trying 10.10.243.213...
+Connected to 10.10.243.213.
+Escape character is '^]'.
+220 mail.filepath.lab ESMTP Postfix (Ubuntu)
+
+kako bismo testirali što sve možemo koristimo HELO i EHLO da se predstavimo serveru.
+HELO je stariji, a EHLO noviji.
+Primjer: EHLO <domena ili kako god se zelimo predstaviti serveru>
+Nakon toga nam server ispisuje sto sve smijemo raditi i koja su nasa prava.
+Primjer:
+HELO testhost
+250 mail.filepath.lab
+EHLO testhost
+250-mail.filepath.lab
+250-PIPELINING
+250-SIZE 10240000
+250-VRFY
+250-ETRN
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250-DSN
+250-SMTPUTF8
+250 CHUNKING
+
+Drugi korak je da pokrenemo proces slanja maila koristeci MAIL FROM:<email> i RCPT TO:<email>
+Primjer:
+MAIL FROM:<tester@hammer.thm>
+RCPT TO:<tester@hammer.thm>
+
+Ako dobijemo 250 2.1.0 Ok kao odgovor, to znaci da je sve dobro i prošlo točno.
+
+Na kraju još trebamo dodati DATA polje i to radimo tako da nakon sto smo napisali mail from i rcpt to pišemo DATA.
+Primjer:
+DATA
+354 End data with <CR><LF>.<CR><LF>
+
+Kada smo to napisali, sada možemo napisati poruku koju želimo.
+Kada napišemo cijelu poruku ulazimo u novi red i ispisujemo samo . u tome redu i potvrđujemo sa Enterom.
+Primjer cijele data razmjene:
+DATA
+354 End data with <CR><LF>.<CR><LF>
+pozdrav ovo je moj prvi mail.
+Ja jako volim tenet i slanje mailova.
+.
+250 2.0.0 Ok: queued as E2905FB215
+
+
+Primjer cijele interakcije:
+root@ip-10-10-227-59:~# telnet 10.10.243.213 25
+Trying 10.10.243.213...
+Connected to 10.10.243.213.
+Escape character is '^]'.
+220 mail.filepath.lab ESMTP Postfix (Ubuntu)
+EHLO korisnik
+250-mail.filepath.lab
+250-PIPELINING
+250-SIZE 10240000
+250-VRFY
+250-ETRN
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250-DSN
+250-SMTPUTF8
+250 CHUNKING
+MAIL FROM:<tester@hammer.thm>
+250 2.1.0 Ok
+RCPT TO:<tester@hammer.thm>
+250 2.1.5 Ok
+DATA
+354 End data with <CR><LF>.<CR><LF>
+pozdrav
+.
+250 2.0.0 Ok: queued as E2905FB215
+QUIT
+221 2.0.0 Bye
+Connection closed by foreign host.
+
+------------------------------------------------------------------------------------------------------
