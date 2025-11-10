@@ -1,0 +1,39 @@
+Kada uđemo u sustav, prvo što trebamo napraviti je pokušati dobiti kredencijale za korisnika sa više ovlasti.
+To radimo tako da tražimo šifre na računalu koje su dostupne odmah, i navesti cu nekoliko primjera.
+
+Unattended Windows Installations
+Windows isntalacije u firmama sa puno računala gdje remote admin vrši instalaciju, i često njegovi login credencijali ostanu na računalu.
+
+C:\Unattend.xml
+C:\Windows\Panther\Unattend.xml
+C:\Windows\Panther\Unattend\Unattend.xml
+C:\Windows\system32\sysprep.inf
+C:\Windows\system32\sysprep\sysprep.xml
+
+Powershell povijest
+Kada korisnik pokreče naredbe preko powershella, naredbe ostaju u povijesti kako bi se kasnije mogle lakše ponoviti, te se nalaze na ovoj lokaciji:
+
+type %userprofile%\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt //za cmd
+type $Env:userprofile%\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt //za ps
+
+Spremljeni kredencijali
+Windows dopušta da koristimo druge korisnike na sastuavu, primjer eudoroam računi na računalima od fakulteta, te također ti kredencijali se mogu spremiti na računalo.
+Možemo izvrsiti ovu naredbu da vidimo račune koje si dustupni i naredbu runas da ih pokrenemo koristeći kredencijale iz memorije.
+
+cmdkey /list
+runas /savecred /user:admin cmd.exe
+
+IIS Configuration
+Internet Information Services je defaultni web server na windows instalacijama. 
+Konfiguracija web stranica na IIS je pohranjena u datoteci web.config i sadrži spremljene šifre za baze podataka i autentifikacijske mahenizme.
+Datoteka se može nalaziti ovdje, a šifre su najcesce u redovima sa connectionString:
+
+C:\inetpub\wwwroot\web.config
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Config\web.config
+
+Kredencijali iz softwera PuTTY
+PuTTY je SSH klijent koji se cesto nalazi u windows sustavima. 
+U njemu se spremaju parametri poput IP adrese, korisnik i ostalih stvari, no ne sprema korisnicke sifre.
+Informacije možemo pronaci ovom nadredbom:
+
+reg query HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\ /f "Proxy" /s
