@@ -37,3 +37,4 @@ U njemu se spremaju parametri poput IP adrese, korisnik i ostalih stvari, no ne 
 Informacije možemo pronaci ovom nadredbom:
 
 reg query HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\ /f "Proxy" /s
+

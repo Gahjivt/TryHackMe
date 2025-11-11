@@ -1,0 +1,7 @@
+Unpatched Software
+Kao što ime govori, neki programi mogu imati greške u sebi koje se mogu zloupotrijebiti.
+Kako bi izlistali vecinu programa mozemo izvrsiti narebu:
+
+wmic product get name,version,vendor
+
+Kada ih ispišemo sve mozemo potraziti exploite za njih preko exploit-db, packet storm ili slicnih stranica.

