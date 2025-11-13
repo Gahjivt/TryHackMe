@@ -1,0 +1,18 @@
+DNS
+
+koristimo nsglookup i dig naredbe
+Za skeniranje DNS zone koristimo:
+
+dig -t AXFR ime-domene @ip_adresa
+
+SMB (server message block)
+
+mozemo pogledati djeljene datoteke preko:
+
+net share
+
+SNMP (Simple Network Management Protocol)
+
+Naredba snmp-check se koristi kako bi sakupili informacije o urežajima u mreži
+
+snmp-check 10.10.247.162 -c public
