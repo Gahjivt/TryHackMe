@@ -1,0 +1,3 @@
+Za početaj najlakša stvar koju mozemo pokusati je dodati korisnika u admin grupu:
+
+C:\> net localgroup administrators userAccount /add
