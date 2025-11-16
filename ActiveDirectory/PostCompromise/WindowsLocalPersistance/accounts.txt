@@ -56,3 +56,27 @@ Mozemo provjeriti kako izgledaju informacije o nasem korisniku preko net uset Ko
 
 
 RID hijacking
+Jos jedna metoda kako bi dobili admin privilegije bez mjenjanja rola je tako da promjenimo registry vrijednosti tako da OS misli da smo admin.
+Trazimo korisnicki SID preko naredbe:
+
+wmic useraccount get name,sid
+
+i dobiti cemo ovakav ispis:
+
+Name                SID
+Administrator       S-1-5-21-1966530601-3185510712-10604624-500
+DefaultAccount      S-1-5-21-1966530601-3185510712-10604624-503
+Guest               S-1-5-21-1966530601-3185510712-10604624-501
+thmuser1            S-1-5-21-1966530601-3185510712-10604624-1008
+
+Nama je cilj staviti da RID (broj na kraju 500,503,...) bude isti kao i administratoru.
+Nacin da to uspijemo je preko alata psexec (jer u protivnom nije dozvoljeno editiranje registrija)
+Koristimo:
+
+PsExec64.exe -i -s regedit
+
+Kada otvorimo idemo u HKEY_LOCAL_MACHINE\SAM\SAM\Domains\Account\Users i otvaramo datoteku Full
+Kada smo usli u nju pretvaramo RID u deakatski, a to znaci da 1008 je 0x3F0
+Datototeka je zapisana u little endian načinu tako da cemo traziti dvije uzastopne celije na početku reda koje sadrze F0 03.
+Kad ih pronađemo mjenjamo ih u F4 01 (hexa od 500)
+Iduci put kada se korisnik prijavi imati ce administracijske dozvole.
