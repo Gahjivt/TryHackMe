@@ -1,0 +1,5 @@
+
+Hexacorn - Windows Persistence
+PayloadsAllTheThings - Windows Persistence 
+Oddvar Moe - Windows Persistence Through RunOnceEx  
+PowerUpSQL 

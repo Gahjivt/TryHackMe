@@ -78,7 +78,7 @@ Koristimo:
 
 PsExec64.exe -i -s regedit
 
-Kada otvorimo idemo u HKEY_LOCAL_MACHINE\SAM\SAM\Domains\Account\Users i otvaramo datoteku Full
+Kada otvorimo idemo u HKEY_LOCAL_MACHINE\SAM\SAM\Domains\Account\Users\{RID u hexa zapisu} i otvaramo datoteku F
 Kada smo usli u nju pretvaramo RID u deakatski, a to znaci da 1008 je 0x3F0
 Datototeka je zapisana u little endian načinu tako da cemo traziti dvije uzastopne celije na početku reda koje sadrze F0 03.
 Kad ih pronađemo mjenjamo ih u F4 01 (hexa od 500)

