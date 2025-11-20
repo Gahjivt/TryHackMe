@@ -1,4 +1,4 @@
-Startup folder
+Cjelina: Startup folder
 Svaki korisnik ima direktoriji koji sadrzi njihove startup datoteke na putanji:
 C:\Users\<your_username>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
 
@@ -7,7 +7,7 @@ C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp
 
 Kako bi to iskoristili za svaki racun generiramo .exe datoteku koju cemo stavili na putanju C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp
 
-Run/RunOnce
+Cjelina: Run/RunOnce
 Također mozemo napraviti da korisnik pokrene program pri logiranju preko registrija.
 Navedene putanje u registriju sadrze specifikacije koje programe pokrenuti pri logona:
 
@@ -25,7 +25,7 @@ Sada ulazimo u HKLM\Software\Microsoft\Windows\CurrentVersion\Run i radimo sljed
 Kreiramo novi REG_EXPAND_SZ (type) i dajemo mu bilo koje ime.
 A za polje data stavljamo putanju naseg paketa. (postaviti putanju exploita u C:\Windows\exploit.exe)
 
-Winlogon
+Cjelina: Winlogon
 Moguca alternativa za ucitavanje exploita je koristenje Winlogon servisa.
 On radi tako da učita korisniciki profil nakon autentifikacije.
 Neki registry kljucevi se nalaze na putanji:
@@ -38,7 +38,7 @@ shell pokazuje na sistemski shell, a to je explorer.exe
 Kako bi exploitali to trebamo kreirati exploit preko msfvenom kao i prije.
 Modificiramo Userinit ili shell i appendamo na kraj sa zarezom putanju naseg exploita da se pokrene.
 
-Logon Scripts
+Cjelina: Logon Scripts
 Ovaj se exploit nadovezuje na prijašnju userinit.exe datoteku.
 Pri učitavanju korisnickog profila on trazi varijablu naziva `UserInitMprLogonScript`
 Mozemo iskorisiti tu varijablu kako bi ucitalo nas exploit.

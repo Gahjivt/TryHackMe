@@ -1,4 +1,4 @@
-Using Web Shells
+Cjelina: Using Web Shells
 Ako zelimo izbjeci koristenje windows servisa, mozemo exploitati aplikacije i web servise na racunalu.
 Trebamo uploadati web shell u web direktoriji za web server i ako ga uploadamo on ce nam dati koristenje korisnika iis apppool\defaultapppool.
 Iako nije admin korisnik ima pristup naredbi SeImpersonatePrivilege preko koje jako lagano mozemo povecati svoje ovlasti.
@@ -15,7 +15,7 @@ Sada mozemo pristupiti web shellu preko:
 <IP adresa racunala>/shell.aspx
 
 
-MSSQL kao backdoor
+Cjelina: MSSQL kao backdoor
 Ovaj exploit ovisi o tome ima li korisnik MSSQL instalaciju.
 Korisitit cemo triggere kako bi mogli izvrsiti neku naredbu kada korisnik izvrsi neki query, poput dodavanja korisnika ili brisanja.
 Prije nego sto pocnemo moramo omoguciti `xp_cmdshell` stored proceduru.
